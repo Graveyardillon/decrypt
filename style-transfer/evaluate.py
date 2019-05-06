@@ -194,7 +194,7 @@ def ffwd_different_dimensions(in_path, out_path, checkpoint_dir,
             checkpoint_dir, device_t, batch_size)
 
 def build_parser():
-    #引数解析用の関数build_parser
+    #オプション解析用の関数build_parser
     parser = ArgumentParser()
     #ArgumentParserのインスタンスを生成
     parser.add_argument('--checkpoint', type=str,
@@ -233,9 +233,9 @@ def build_parser():
     return parser
     #parserインスタンスをreturnする
 
-#optsはチェックしてほしい引数を格納するための引数
+#optsはチェックしてほしいオプションを格納するための引数
 def check_opts(opts):
-    #引数に入力されたものが適切かどうかを判別するための関数
+    #オプションとして入力されたものが適切かどうかを判別するための関数
     exists(opts.checkpoint_dir, 'Checkpoint not found!')
     #checkpoint_dir引数がちゃんと実際に存在する場所を示しているかを確認する
     exists(opts.in_path, 'In path not found!')

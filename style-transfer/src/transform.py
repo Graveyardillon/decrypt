@@ -70,9 +70,9 @@ def _instance_norm(net, train=True):
     #colsには画像の縦の大きさが格納される
     #channelsには、現在のノードの数が格納される
     var_shape = [channels]
-    #channelsのリスト型をvar_shapeに格納する
+    #channelsのリストをvar_shapeに格納する
     mu, sigma_sq = tf.nn.moments(net, [1,2], keep_dims=True)
-    #
+    
     shift = tf.Variable(tf.zeros(var_shape))
     scale = tf.Variable(tf.ones(var_shape))
     epsilon = 1e-3

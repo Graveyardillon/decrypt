@@ -1,36 +1,77 @@
 from __future__ import print_function
+#python3系の機能からprint関数を持ってくる
 import functools
+#高階関数のためのモジュールfunctoolsをimportする
 import vgg, pdb, time
+#vgg.pyをimportする
+#デバッグ用のライブラリpdbをimportする
+#時間の概念を扱うためんおライブラリtimeをimportする
 import tensorflow as tf, numpy as np, os
+#tensorflowをimportする
+#行列演算用のライブラリnumpyをimportする
+#ファイルやディレクトリ操作用のライブラリosをimportする
 import transform
+#transform.pyをimportする
 from utils import get_img
+#utils.pyからget_img関数をimportする
 
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
+#
 CONTENT_LAYER = 'relu4_2'
+#
 DEVICES = 'CUDA_VISIBLE_DEVICES'
+#
 
 # np arr, np arr
+#content_targetsはコンテンツ画像
+#style_targetはスタイル画像
+#content_weightはコンテンツ画像の損失の重み
+#style_weightはスタイル画像の損失の重み
+#tv_weightは
+#vgg_pathはvggへのパス
+#print_iterationsはチェックポイントに到達するまでの数
+#batch_sizeはバッチサイズ
+#save_pathはチェックポイントのファイルを保存するためのディレクトリのパス
+#slowはデバッグ用の機能"slow"を利用するかを指定するための引数
+#learning_rateは学習率
+#debugはデバッグモードがONかどうかを指定する引数
 def optimize(content_targets, style_target, content_weight, style_weight,
              tv_weight, vgg_path, epochs=2, print_iterations=1000,
              batch_size=4, save_path='saver/fns.ckpt', slow=False,
              learning_rate=1e-3, debug=False):
+    #
     if slow:
+        #slowが指定されていればTrue
         batch_size = 1
+        #バッチサイズを１と指定する
     mod = len(content_targets) % batch_size
+    #コンテンツ画像を効率良くバッチサイズに割り当てて学習できるかを見ておく
+    #content_targetsとバッチサイズの剰余をmodに格納する
     if mod > 0:
+        #modが0より大きければTrue
         print("Train set has been trimmed slightly..")
-        content_targets = content_targets[:-mod] 
+        #訓練用の画像を少しだけ削減して使うことをコンソールに書き込む
+        content_targets = content_targets[:-mod]
+        #content_targetsに格納されている画像セットから、剰余の分を後ろから削減する
 
     style_features = {}
+    #style_features変数を初期化する
 
     batch_shape = (batch_size,256,256,3)
+    #バッチサイズを考慮して4次元のテンソルを作り、batch_shape変数に格納する
     style_shape = (1,) + style_target.shape
+    #スタイル画像にもう一次元追加して4次元のテンソルを作り、style_shape変数に格納する
+
     print(style_shape)
+    #スタイル画像の形をコンソールに出力する
 
     # precompute style features
     with tf.Graph().as_default(), tf.device('/cpu:0'), tf.Session() as sess:
+        #tensorflowのグラフを作成し、デバイスをcpuに設定し、tf.Session()でグラフの実行環境を独立させる
         style_image = tf.placeholder(tf.float32, shape=style_shape, name='style_image')
+        #入力用のノードをplaceholderを使って作成する
         style_image_pre = vgg.preprocess(style_image)
+        #
         net = vgg.net(vgg_path, style_image_pre)
         style_pre = np.array([style_target])
         for layer in STYLE_LAYERS:

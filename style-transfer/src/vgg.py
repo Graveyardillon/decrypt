@@ -1,12 +1,19 @@
 # Copyright (c) 2015-2016 Anish Athalye. Released under GPLv3.
 
 import tensorflow as tf
+#tensorflowをimportする
 import numpy as np
+#行列演算用のライブラリnumpyをimportする
 import scipy.io
+#ファイルの入出力用のライブラリscipy.ioをimportする
 import pdb
+#デバッグ用のライブラリpdbをimportする
 
 MEAN_PIXEL = np.array([ 123.68 ,  116.779,  103.939])
+#
 
+#data_pathは
+#input_imageは
 def net(data_path, input_image):
     layers = (
         'conv1_1', 'relu1_1', 'conv1_2', 'relu1_2', 'pool1',

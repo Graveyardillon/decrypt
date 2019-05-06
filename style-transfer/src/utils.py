@@ -16,16 +16,25 @@ def save_img(out_path, img):
     scipy.misc.imsave(out_path, img)
     #画像を保存する
 
-
+#style_pathはスケールしたい画像のパス
+#style_scaleは画像の大きさを変更するための目安のスケール
 def scale_img(style_path, style_scale):
-    #
+    #scale_imgは画像をスケールするための関数
     scale = float(style_scale)
-    #
+    #style_scaleをfloat型でキャストしてscale変数に格納する
     o0, o1, o2 = scipy.misc.imread(style_path, mode='RGB').shape
+    #imread関数で画像のソースを読み込み、modeを3x8bitのRGBに設定しておく
+    #そしてそれぞれの要素をo0, o1, o2に格納する
     scale = float(style_scale)
+    #よくわからんけどstyle_scaleをもう一回floatでキャストする
     new_shape = (int(o0 * scale), int(o1 * scale), o2)
+    #画像の縦の大きさの値を保持しているo0, 横の大きさの値を保持しているo1,
+    #それぞれをスケールした値をintにキャストしてnew_shape変数に格納する
+    #o2は深さなので、スケールする必要はない
     style_target = _get_img(style_path, img_size=new_shape)
+    #style_pathを_get_img()で読みこむときに、img_sizeの中身をnew_shapeに設定することでリサイズする
     return style_target
+    #リサイズした画像style_targetをreturnする
 
 #srcは読みこむ画像のパス
 #img_sizeは基本的にFalseで指定されているが、必要があればサイズを指定することができる
@@ -36,7 +45,7 @@ def get_img(src, img_size=False):
    if not (len(img.shape) == 3 and img.shape[2] == 3):
        #要素が高さ、幅、深さの３つもしくは深さのスカラ値が３でなければTrue（深さはピクセル深度のこと）
        img = np.dstack((img,img,img))
-       #imgの深さを３にするために、img３つを深さ方向に結合する。
+       #imgの深さを３にするために、img３つを深さ方向に結合する。（RGBの３つ）
    if img_size != False:
        #引数img_sizeがFalseではないとき
        img = scipy.misc.imresize(img, img_size)
