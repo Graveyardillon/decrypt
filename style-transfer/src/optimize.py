@@ -73,6 +73,7 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         style_image_pre = vgg.preprocess(style_image)
         #
         net = vgg.net(vgg_path, style_image_pre)
+        #
         style_pre = np.array([style_target])
         for layer in STYLE_LAYERS:
             features = net[layer].eval(feed_dict={style_image:style_pre})

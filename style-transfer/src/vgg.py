@@ -12,10 +12,11 @@ import pdb
 MEAN_PIXEL = np.array([ 123.68 ,  116.779,  103.939])
 #
 
-#data_pathは
+#data_pathは読み取りたいmatlabファイルのパス
 #input_imageは
 def net(data_path, input_image):
     layers = (
+        #画風変換で用いるネットワークの層を格納しておく
         'conv1_1', 'relu1_1', 'conv1_2', 'relu1_2', 'pool1',
 
         'conv2_1', 'relu2_1', 'conv2_2', 'relu2_2', 'pool2',
@@ -31,8 +32,12 @@ def net(data_path, input_image):
     )
 
     data = scipy.io.loadmat(data_path)
+    #matlabファイルを読み取る関数scipy.io.loadmat()を使う
+    #data_pathに格納されているvggのパスから、matlabファイルを読み取る
     mean = data['normalization'][0][0][0]
+    #
     mean_pixel = np.mean(mean, axis=(0, 1))
+
     weights = data['layers'][0]
 
     net = {}

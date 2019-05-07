@@ -255,4 +255,6 @@ def main():
     print("Training complete. For evaluation:\n    `%s`" % cmd_text)
 
 if __name__ == '__main__':
+    #このプログラムが直接実行される時True
     main()
+    #main関数を実行する

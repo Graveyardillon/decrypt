@@ -9,14 +9,21 @@ WEIGHTS_INIT_STDEV = .1
 def net(image):
     #画風変換のネットワークを通すための関数net()
     conv1 = _conv_layer(image, 32, 9, 1)
-    #
+    #CNNを通す
     conv2 = _conv_layer(conv1, 64, 3, 2)
+    #CNNを通す
     conv3 = _conv_layer(conv2, 128, 3, 2)
+    #CNNを通す
     resid1 = _residual_block(conv3, 3)
+    #ResNetを通す
     resid2 = _residual_block(resid1, 3)
+    #ResNetを通す
     resid3 = _residual_block(resid2, 3)
+    #ResNetを通す
     resid4 = _residual_block(resid3, 3)
+    #ResNetを通す
     resid5 = _residual_block(resid4, 3)
+    #ResNetを通す
     conv_t1 = _conv_tranpose_layer(resid5, 64, 3, 2)
     conv_t2 = _conv_tranpose_layer(conv_t1, 32, 3, 2)
     conv_t3 = _conv_layer(conv_t2, 3, 9, 1, relu=False)
@@ -25,6 +32,9 @@ def net(image):
 
 #netはニューラルネットワークのレイヤーも4しくは画像
 #num_filtersはフィルタの数（厚さ？）
+#filter_sizeはフィルタの大きさ
+#stridesはフィルタの移動量
+#reluは活性化関数としてrelu関数を使うかどうかの指定
 def _conv_layer(net, num_filters, filter_size, strides, relu=True):
     #畳み込み層を再現した関数_conv_layer()
     weights_init = _conv_init_vars(net, num_filters, filter_size)
@@ -34,13 +44,21 @@ def _conv_layer(net, num_filters, filter_size, strides, relu=True):
     net = tf.nn.conv2d(net, weights_init, strides_shape, padding='SAME')
     #CNNに画像もしくはレイヤーを入力
     net = _instance_norm(net)
-    #
+    #netを正規化する
     if relu:
+        #relu関数を使うことが指定されていたら
         net = tf.nn.relu(net)
+        #netをrelu関数にかけて活性化する
 
     return net
+    #netをreturnする
 
+#netは画像もしくはネットワークの層
+#num_filtersはフィルタの数（厚さ）
+#filter_sizeはフィルタの大きさ
+#stridesはフィルタの移動量
 def _conv_tranpose_layer(net, num_filters, filter_size, strides):
+    #
     weights_init = _conv_init_vars(net, num_filters, filter_size, transpose=True)
 
     batch_size, rows, cols, in_channels = [i.value for i in net.get_shape()]
@@ -55,14 +73,19 @@ def _conv_tranpose_layer(net, num_filters, filter_size, strides):
     net = _instance_norm(net)
     return tf.nn.relu(net)
 
+#netは画像やネットワーク層
+#filter_sizeはフィルタの大きさを指定する
 def _residual_block(net, filter_size=3):
+    #ResNetを再現した関数_residual_block()
     tmp = _conv_layer(net, 128, filter_size, 1)
+    #CNNを通す
     return net + _conv_layer(tmp, 128, filter_size, 1, relu=False)
+    #CNNを通した後の行列と最初の行列を足し算してreturnする
 
 #netはニューラルネットワークのレイヤーもしくは画像
 #trainはよくわからんけどtrueの引数
 def _instance_norm(net, train=True):
-    #
+    #行列を正規化するための関数
     batch, rows, cols, channels = [i.value for i in net.get_shape()]
     #ネットワークの形をそれぞれ抽出し、またそれぞれの変数に格納していく
     #batch_size変数にバッチサイズを代入する
@@ -72,12 +95,18 @@ def _instance_norm(net, train=True):
     var_shape = [channels]
     #channelsのリストをvar_shapeに格納する
     mu, sigma_sq = tf.nn.moments(net, [1,2], keep_dims=True)
-    
+    #tf.nn.moments関数を使って、netの平均と、[1,2]からの差を分散として求める
+    #keep_dimsをtrueにして、入力時の形を保つようにする
     shift = tf.Variable(tf.zeros(var_shape))
+    #現在のノードの数（形）のゼロ行列を作り出し、shift変数に代入する
     scale = tf.Variable(tf.ones(var_shape))
+    #現在のノードの数（形）の行列を１で初期化し、scale変数に代入する
     epsilon = 1e-3
+    #1x10^-3をepsilon変数に代入する
     normalized = (net-mu)/(sigma_sq + epsilon)**(.5)
+    #値を正規化する (X_old - X_new) / X_std
     return scale * normalized + shift
+    #scaleに入っている行列を使って初期化することで、元の形に合わせる。
 
 #netはニューラルネットワークのレイヤーもしくは画像
 #out_channelsは出力する側のノードの数
