@@ -10,7 +10,7 @@ import pdb
 #デバッグ用のライブラリpdbをimportする
 
 MEAN_PIXEL = np.array([ 123.68 ,  116.779,  103.939])
-#
+#vgg用のRGB平均値
 
 #data_pathは読み取りたいmatlabファイルのパス
 #input_imageは
@@ -33,12 +33,13 @@ def net(data_path, input_image):
 
     data = scipy.io.loadmat(data_path)
     #matlabファイルを読み取る関数scipy.io.loadmat()を使う
-    #data_pathに格納されているvggのパスから、matlabファイルを読み取る
+    #data_pathに格納されているvggのパスから、matlabファイルの変数をすべて読み取る
     mean = data['normalization'][0][0][0]
-    #
+    #mean変数に、matlabファイルから読み取ったdata変数の中身を正規化して0, 1の範囲にした値を代入する
     mean_pixel = np.mean(mean, axis=(0, 1))
-
+    #mean_pixel変数に、正規化した値の平均を
     weights = data['layers'][0]
+    #
 
     net = {}
     current = input_image
