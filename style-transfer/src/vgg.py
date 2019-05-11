@@ -15,6 +15,7 @@ MEAN_PIXEL = np.array([ 123.68 ,  116.779,  103.939])
 #data_pathは読み取りたいmatlabファイルのパス
 #input_imageは
 def net(data_path, input_image):
+    #
     layers = (
         #画風変換で用いるネットワークの層を格納しておく
         'conv1_1', 'relu1_1', 'conv1_2', 'relu1_2', 'pool1',
@@ -35,18 +36,28 @@ def net(data_path, input_image):
     #matlabファイルを読み取る関数scipy.io.loadmat()を使う
     #data_pathに格納されているvggのパスから、matlabファイルの変数をすべて読み取る
     mean = data['normalization'][0][0][0]
-    #mean変数に、matlabファイルから読み取ったdata変数の中身を正規化して0, 1の範囲にした値を代入する
+    #matlabファイルから読み取ったdata変数に格納されている、
+    #3次元のnormalizationワークスペース変数の中身をmean変数に代入する
     mean_pixel = np.mean(mean, axis=(0, 1))
-    #mean_pixel変数に、正規化した値の平均を
+    #mean_pixel変数に、正規化するための値meanを1次元の変数に行列を直して格納する
     weights = data['layers'][0]
-    #
+    #matlabファイルの中に書かれているlayersワークスペース変数から重みの値を取り出し、
+    #layers変数に格納する
 
     net = {}
+    #net変数を初期化する
     current = input_image
+    #
     for i, name in enumerate(layers):
+        #layersの中身を、enumerate関数を用いてインデックス番号付きの要素としてforループさせる
+        #この場合、iがインデックス番号でnameが
         kind = name[:4]
+        #インデックス4つ分をnameから取り出して、kind変数に格納する
+        #conv, relu, conv, relu
         if kind == 'conv':
+            #kind変数の中身がconvである場合true
             kernels, bias = weights[i][0][0][0][0]
+            #
             # matconvnet: weights are [width, height, in_channels, out_channels]
             # tensorflow: weights are [height, width, in_channels, out_channels]
             kernels = np.transpose(kernels, (1, 0, 2, 3))
