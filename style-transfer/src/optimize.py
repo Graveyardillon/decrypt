@@ -39,7 +39,6 @@ def optimize(content_targets, style_target, content_weight, style_weight,
              tv_weight, vgg_path, epochs=2, print_iterations=1000,
              batch_size=4, save_path='saver/fns.ckpt', slow=False,
              learning_rate=1e-3, debug=False):
-    #
     if slow:
         #slowが指定されていればTrue
         batch_size = 1
@@ -75,6 +74,7 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         net = vgg.net(vgg_path, style_image_pre)
         #
         style_pre = np.array([style_target])
+        #
         for layer in STYLE_LAYERS:
             features = net[layer].eval(feed_dict={style_image:style_pre})
             features = np.reshape(features, (-1, features.shape[3]))

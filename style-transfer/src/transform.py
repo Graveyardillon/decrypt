@@ -25,10 +25,15 @@ def net(image):
     resid5 = _residual_block(resid4, 3)
     #ResNetを通す
     conv_t1 = _conv_tranpose_layer(resid5, 64, 3, 2)
+    #transposeされたレイヤを通して、deconvすることでサイズを再現する
     conv_t2 = _conv_tranpose_layer(conv_t1, 32, 3, 2)
+    #またdeconvする
     conv_t3 = _conv_layer(conv_t2, 3, 9, 1, relu=False)
+    #もう一回convする
     preds = tf.nn.tanh(conv_t3) * 150 + 255./2
+    #活性化関数tanhを使って活性化して変数preds
     return preds
+    #preds変数をreturnする
 
 #netはニューラルネットワークのレイヤーも4しくは画像
 #num_filtersはフィルタの数（厚さ？）
@@ -58,20 +63,33 @@ def _conv_layer(net, num_filters, filter_size, strides, relu=True):
 #filter_sizeはフィルタの大きさ
 #stridesはフィルタの移動量
 def _conv_tranpose_layer(net, num_filters, filter_size, strides):
-    #
+    #転置行列を用いてdeconvを行う
     weights_init = _conv_init_vars(net, num_filters, filter_size, transpose=True)
-
+    #重みの値を初期化する
     batch_size, rows, cols, in_channels = [i.value for i in net.get_shape()]
+    #ネットワークの型をそれぞれ抽出し、またそれぞれの変数に格納していく
+    #batch_sizeにはバッチサイズが代入される
+    #rowsには画像の横の大きさが格納される
+    #colsには画像の縦の大きさが格納される
+    #in_channelsには画像の深さが格納される
     new_rows, new_cols = int(rows * strides), int(cols * strides)
+    #フィルタの移動量と画像の横の大きさの積をnew_rows変数に格納する
+    #フィルタの移動量を画像の縦の大きさの積をnew_cols変数に格納する
+
     # new_shape = #tf.pack([tf.shape(net)[0], new_rows, new_cols, num_filters])
 
     new_shape = [batch_size, new_rows, new_cols, num_filters]
+    #上で作ったnew_rowsとnew_colsを用いて新しい変数new_shapeを定義する
     tf_shape = tf.stack(new_shape)
+    #new_shapeに格納されている4つの要素をtf.stack()で結合させてテンソルを作り出す
     strides_shape = [1,strides,strides,1]
-
+    #フィルタの移動量を定義してstrides_shape変数に格納する
     net = tf.nn.conv2d_transpose(net, weights_init, tf_shape, strides_shape, padding='SAME')
+    #conv2dを転置行列で行うことで、deconvolutionをすることができる
     net = _instance_norm(net)
+    #行列をDeconvした後に正規化する
     return tf.nn.relu(net)
+    #正規化した後の行列を活性化関数Reluを使って活性化し、returnする
 
 #netは画像やネットワーク層
 #filter_sizeはフィルタの大きさを指定する

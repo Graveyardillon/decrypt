@@ -57,12 +57,16 @@ def net(data_path, input_image):
         if kind == 'conv':
             #kind変数の中身がconvである場合true
             kernels, bias = weights[i][0][0][0][0]
-            #
+            #kernels変数の方には実際の重みの値を格納する（たぶん）
+            #bias変数の方にはバイアスとなるベクトルが格納される
             # matconvnet: weights are [width, height, in_channels, out_channels]
             # tensorflow: weights are [height, width, in_channels, out_channels]
             kernels = np.transpose(kernels, (1, 0, 2, 3))
+            #kernelsに入っている行列を転置行列にしてdeconvする
             bias = bias.reshape(-1)
+            #bias変数の中身を一次ベクトルに変換して再格納する
             current = _conv_layer(current, kernels, bias)
+            #
         elif kind == 'relu':
             current = tf.nn.relu(current)
         elif kind == 'pool':
@@ -72,8 +76,11 @@ def net(data_path, input_image):
     assert len(net) == len(layers)
     return net
 
-
+#input
+#weights
+#bias
 def _conv_layer(input, weights, bias):
+    #
     conv = tf.nn.conv2d(input, tf.constant(weights), strides=(1, 1, 1, 1),
             padding='SAME')
     return tf.nn.bias_add(conv, bias)
@@ -83,10 +90,14 @@ def _pool_layer(input):
     return tf.nn.max_pool(input, ksize=(1, 2, 2, 1), strides=(1, 2, 2, 1),
             padding='SAME')
 
-
+#image変数は画像を格納するための変数
 def preprocess(image):
+    #訓練データの前処理を行うための関数preprocess()
     return image - MEAN_PIXEL
+    #画像からRGBの平均値をマイナスする
 
-
+#image変数は画像を格納するための変数
 def unprocess(image):
+    #訓練データの前処理を打ち消すための変数unprocess()
     return image + MEAN_PIXEL
+    #画像にRGBの平均値をプラスする
