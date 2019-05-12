@@ -70,7 +70,7 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         style_image = tf.placeholder(tf.float32, shape=style_shape, name='style_image')
         #入力用のノードをplaceholderを使って作成する
         style_image_pre = vgg.preprocess(style_image)
-        #
+        #style_imageに格納されている画像をpreprocess関数を用いて前処理を行う
         net = vgg.net(vgg_path, style_image_pre)
         #
         style_pre = np.array([style_target])
