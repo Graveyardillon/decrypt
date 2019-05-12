@@ -72,11 +72,13 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         style_image_pre = vgg.preprocess(style_image)
         #style_imageに格納されている画像をpreprocess関数を用いて前処理を行う
         net = vgg.net(vgg_path, style_image_pre)
-        #
+        #読みこんだVGGファイルと画像を使って、重なったCNNを通す
         style_pre = np.array([style_target])
-        #
+        #スタイル画像を行列に変換する
         for layer in STYLE_LAYERS:
+            #STYLE_LAYERS変数に格納されている文字列をlayer変数に格納していく
             features = net[layer].eval(feed_dict={style_image:style_pre})
+            #
             features = np.reshape(features, (-1, features.shape[3]))
             gram = np.matmul(features.T, features) / features.size
             style_features[layer] = gram
