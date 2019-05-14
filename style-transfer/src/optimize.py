@@ -16,11 +16,11 @@ from utils import get_img
 #utils.pyからget_img関数をimportする
 
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
-#
+#NNで使うためのレイヤの名前
 CONTENT_LAYER = 'relu4_2'
 #
 DEVICES = 'CUDA_VISIBLE_DEVICES'
-#
+#GPUの設定を読み込むための変数
 
 # np arr, np arr
 #content_targetsはコンテンツ画像
@@ -72,16 +72,20 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         style_image_pre = vgg.preprocess(style_image)
         #style_imageに格納されている画像をpreprocess関数を用いて前処理を行う
         net = vgg.net(vgg_path, style_image_pre)
-        #読みこんだVGGファイルと画像を使って、重なったCNNを通す
+        #定義したCNNをnet変数に格納する
         style_pre = np.array([style_target])
         #スタイル画像を行列に変換する
         for layer in STYLE_LAYERS:
             #STYLE_LAYERS変数に格納されている文字列をlayer変数に格納していく
             features = net[layer].eval(feed_dict={style_image:style_pre})
-            #
+            #layer変数の中身をひとつの要素としてnet変数にスタイル画像の行列をfeed_dictとして与え、
+            #対応するNNを実行して結果をfeaturesに格納する
             features = np.reshape(features, (-1, features.shape[3]))
+            #features変数を
             gram = np.matmul(features.T, features) / features.size
+            #
             style_features[layer] = gram
+            #
 
     with tf.Graph().as_default(), tf.Session() as sess:
         X_content = tf.placeholder(tf.float32, shape=batch_shape, name="X_content")
