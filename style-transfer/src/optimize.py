@@ -39,6 +39,7 @@ def optimize(content_targets, style_target, content_weight, style_weight,
              tv_weight, vgg_path, epochs=2, print_iterations=1000,
              batch_size=4, save_path='saver/fns.ckpt', slow=False,
              learning_rate=1e-3, debug=False):
+    #パラメータの最適化をするための関数optimizer()
     if slow:
         #slowが指定されていればTrue
         batch_size = 1
@@ -83,22 +84,33 @@ def optimize(content_targets, style_target, content_weight, style_weight,
             features = np.reshape(features, (-1, features.shape[3]))
             #features変数を[features[3], -1]に成形する
             gram = np.matmul(features.T, features) / features.size
-            #features行列の転置行列と、オリジナルの行列をmatmul
+            #features行列の転置行列とオリジナルの行列をmatmulで乗算し、
+            #その結果取得した値をfeaturesの要素数で除算し、gram変数に格納する
             style_features[layer] = gram
-            #
+            #style_featuresリストのlayer(ループ毎に変わる)要素のものにgram変数の中身を格納しておく
+            #なんでかはしらん
 
     with tf.Graph().as_default(), tf.Session() as sess:
+        #tensorflowのグラフを作成し、セッションを開始して独立空間を作り出す
         X_content = tf.placeholder(tf.float32, shape=batch_shape, name="X_content")
+        #入力用のノードをplaceholderを使って作成し、名前はX_content、サイズはbatch_shapeと同じようにしておく
         X_pre = vgg.preprocess(X_content)
+        #X_contentの入力ノードに入力されるのは基本的に画像なので、preprocess関数を使って前処理を行い、
+        #その結果をX_pre変数に格納する
 
         # precompute content features
         content_features = {}
+        #content_features変数を定義する
         content_net = vgg.net(vgg_path, X_pre)
+        #content_net変数に、X_preをCNNに通した結果を格納する
         content_features[CONTENT_LAYER] = content_net[CONTENT_LAYER]
+        #content_features変数の、'relu4_2'の要素のところにCNNを通して出力された値の'relu4_2'の結果を格納
 
         if slow:
+            #slowモードのとき
             preds = tf.Variable(
                 tf.random_normal(X_content.get_shape()) * 0.256
+                #
             )
             preds_pre = preds
         else:
