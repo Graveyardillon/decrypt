@@ -81,9 +81,9 @@ def optimize(content_targets, style_target, content_weight, style_weight,
             #layer変数の中身をひとつの要素としてnet変数にスタイル画像の行列をfeed_dictとして与え、
             #対応するNNを実行して結果をfeaturesに格納する
             features = np.reshape(features, (-1, features.shape[3]))
-            #features変数を
+            #features変数を[features[3], -1]に成形する
             gram = np.matmul(features.T, features) / features.size
-            #
+            #features行列の転置行列と、オリジナルの行列をmatmul
             style_features[layer] = gram
             #
 
