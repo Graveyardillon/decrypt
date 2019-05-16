@@ -110,7 +110,7 @@ def optimize(content_targets, style_target, content_weight, style_weight,
             #slowモードのとき
             preds = tf.Variable(
                 tf.random_normal(X_content.get_shape()) * 0.256
-                #
+                #X_contentの形で正規分布で初期化をし、値に0.256をかける
             )
             preds_pre = preds
         else:
