@@ -110,16 +110,23 @@ def optimize(content_targets, style_target, content_weight, style_weight,
             #slowモードのとき
             preds = tf.Variable(
                 tf.random_normal(X_content.get_shape()) * 0.256
-                #X_contentの形で正規分布で初期化をし、値に0.256をかける
+                #入力ノードの形で正規分布で初期化をし、値に0.256をかける
             )
+            #そしてその値（行列）をpredsに格納する
             preds_pre = preds
+            #preds_pre変数にpredsを格納する
         else:
+            #slowモードでないとき
             preds = transform.net(X_content/255.0)
+            #入力ノードの値を255で割ってマッピングのネットワークを通す
             preds_pre = vgg.preprocess(preds)
+            #preds変数の中の値を画像として前処理を行う
 
         net = vgg.net(vgg_path, preds_pre)
+        #preds_preをvggの方にあるCNNに通し、VGGの畳み込み層（合成のネットワーク）を通す
 
         content_size = _tensor_size(content_features[CONTENT_LAYER])*batch_size
+        #
         assert _tensor_size(content_features[CONTENT_LAYER]) == _tensor_size(net[CONTENT_LAYER])
         content_loss = content_weight * (2 * tf.nn.l2_loss(
             net[CONTENT_LAYER] - content_features[CONTENT_LAYER]) / content_size
