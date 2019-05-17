@@ -205,5 +205,8 @@ def optimize(content_targets, style_target, content_weight, style_weight,
                     yield(_preds, losses, iterations, epoch)
 
 def _tensor_size(tensor):
+    #
     from operator import mul
+    #operatorライブラリ（演算子）から、mulメソッドを読み込む
     return functools.reduce(mul, (d.value for d in tensor.get_shape()[1:]), 1)
+    #受け取ったテンソルの
