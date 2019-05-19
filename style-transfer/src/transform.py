@@ -35,7 +35,7 @@ def net(image):
     return preds
     #preds変数をreturnする
 
-#netはニューラルネットワークのレイヤーも4しくは画像
+#netはニューラルネットワークのレイヤーもしくは画像
 #num_filtersはフィルタの数（厚さ？）
 #filter_sizeはフィルタの大きさ
 #stridesはフィルタの移動量

@@ -102,9 +102,10 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         content_features = {}
         #content_features変数を定義する
         content_net = vgg.net(vgg_path, X_pre)
-        #content_net変数に、X_preをCNNに通した結果を格納する
+        #content_net変数に、X_preをVGGのCNNに通した結果を格納する
         content_features[CONTENT_LAYER] = content_net[CONTENT_LAYER]
         #content_features変数の、'relu4_2'の要素のところにCNNを通して出力された値の'relu4_2'の結果を格納
+        #つまり、この変数に格納されている値もnetである（tensor）
 
         if slow:
             #slowモードのとき
@@ -126,9 +127,13 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         #preds_preをvggの方にあるCNNに通し、VGGの畳み込み層（合成のネットワーク）を通す
 
         content_size = _tensor_size(content_features[CONTENT_LAYER])*batch_size
-        #
+        #_tensor_size関数を使って取得したテンソルの形（サイズ）にbatch_sizeを掛け合わせ、
+        #それをcontent_sizeとして変数に格納する
         assert _tensor_size(content_features[CONTENT_LAYER]) == _tensor_size(net[CONTENT_LAYER])
+        #content_featuresのCONTENT_LAYERの中身とnetのCONTENT_LAYERの中身が同じでなければAssertionError
+        #同じ層を動作させているかを確認するためと思われる
         content_loss = content_weight * (2 * tf.nn.l2_loss(
+            #
             net[CONTENT_LAYER] - content_features[CONTENT_LAYER]) / content_size
         )
 
@@ -204,9 +209,12 @@ def optimize(content_targets, style_target, content_weight, style_weight,
                        res = saver.save(sess, save_path)
                     yield(_preds, losses, iterations, epoch)
 
+#テンソルを格納するための引数tensor
 def _tensor_size(tensor):
-    #
+    #テンソルのサイズ（形？）を取得するための関数_tensor_size()
     from operator import mul
-    #operatorライブラリ（演算子）から、mulメソッドを読み込む
+    #operatorライブラリ（演算子）から、掛け算をするための関数mul()を読み込む
     return functools.reduce(mul, (d.value for d in tensor.get_shape()[1:]), 1)
-    #受け取ったテンソルの
+    #受け取ったテンソルの形を取得して、0番目の要素をスライスして考慮しないようにする
+    #reduce関数を使って、後置for文によって取得されるdの値と1をmulメソッドでノードの数だけ掛け算し、
+    #最終的なタプルの値をreturnする
