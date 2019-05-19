@@ -133,8 +133,12 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         #content_featuresのCONTENT_LAYERの中身とnetのCONTENT_LAYERの中身が同じでなければAssertionError
         #同じ層を動作させているかを確認するためと思われる
         content_loss = content_weight * (2 * tf.nn.l2_loss(
-            #
+            #l2_loss()関数は二乗誤差を求めるための関数
             net[CONTENT_LAYER] - content_features[CONTENT_LAYER]) / content_size
+            #net変数の方は実際に機械がマッピングして算出した実績値を保持している
+            #content_features変数の方は入力された画像をCNNに通したときの予測値を保持している
+            #上の２つの数を減算してcontent_size変数に格納されているテンソルのサイズで除算し、
+            #それをコンテンツの損失の値として利用する
         )
 
         style_losses = []
