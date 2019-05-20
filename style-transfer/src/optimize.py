@@ -142,9 +142,13 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         )
 
         style_losses = []
+        #スタイル損失の値を格納するための変数style_lossesを定義する
         for style_layer in STYLE_LAYERS:
+            #STYLE_LAYERSの中身をstyle_layerに格納していく
             layer = net[style_layer]
+            #layer変数に、ネットワークのstyle_layer要素のところの値を格納する
             bs, height, width, filters = map(lambda i:i.value,layer.get_shape())
+            
             size = height * width * filters
             feats = tf.reshape(layer, (bs, height * width, filters))
             feats_T = tf.transpose(feats, perm=[0,2,1])
