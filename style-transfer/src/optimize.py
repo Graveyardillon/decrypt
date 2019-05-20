@@ -144,15 +144,24 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         style_losses = []
         #スタイル損失の値を格納するための変数style_lossesを定義する
         for style_layer in STYLE_LAYERS:
-            #STYLE_LAYERSの中身をstyle_layerに格納していく
+            #STYLE_LAYERSに格納されている変数の分だけ、style_layerでループを行う
             layer = net[style_layer]
-            #layer変数に、ネットワークのstyle_layer要素のところの値を格納する
+            #layer変数にCNNの[style_layer]の値（ネットワーク）を格納する
             bs, height, width, filters = map(lambda i:i.value,layer.get_shape())
-            
+            #高階関数mapを使って、layerが保持している値4つを取り出す
+            #bsはバッチサイズ
+            #heightはネットワークの縦の長さ
+            #widthはネットワークの横の長さ
+            #filterは畳み込み層のフィルタの大きさ
             size = height * width * filters
+            #ネットワークの縦横の長さとフィルタの大きさをそれぞれ掛け算してsizeを導き出す
             feats = tf.reshape(layer, (bs, height * width, filters))
+            #feats変数に、layerの形を[バッチサイズ、ネットワークの面積、フィルタサイズ]に変更する
             feats_T = tf.transpose(feats, perm=[0,2,1])
+            #feats行列の縦と横が逆転した形の転置行列をfeats_Tに格納する
             grams = tf.matmul(feats_T, feats) / size
+            #もともとの行列featsとその転置行列feats_Tの行列の積をsizeで割り、
+            #その値をgrams変数に格納する
             style_gram = style_features[style_layer]
             style_losses.append(2 * tf.nn.l2_loss(grams - style_gram)/style_gram.size)
 
