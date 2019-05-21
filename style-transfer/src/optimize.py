@@ -41,6 +41,7 @@ def optimize(content_targets, style_target, content_weight, style_weight,
              batch_size=4, save_path='saver/fns.ckpt', slow=False,
              learning_rate=1e-3, debug=False):
     # パラメータの最適化をするための関数optimizer()
+    #AdaINで最適化をしている
     if slow:
         # slowが指定されていればTrue
         batch_size = 1
@@ -178,8 +179,9 @@ def optimize(content_targets, style_target, content_weight, style_weight,
 
         # total variation denoising
         tv_y_size = _tensor_size(preds[:,1:,:,:])
-        #
+        #total variationのy方向の大きさを_tensor_size()関数で取得する
         tv_x_size = _tensor_size(preds[:,:,1:,:])
+        #total variationのx方向の大きさを_tensor_size()関数で取得する
         y_tv = tf.nn.l2_loss(preds[:,1:,:,:] - preds[:,:batch_shape[1]-1,:,:])
         x_tv = tf.nn.l2_loss(preds[:,:,1:,:] - preds[:,:,:batch_shape[2]-1,:])
         tv_loss = tv_weight*2*(x_tv/tv_x_size + y_tv/tv_y_size)/batch_size
