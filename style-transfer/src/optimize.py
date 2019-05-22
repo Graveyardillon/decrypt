@@ -6,7 +6,7 @@ import functools
 import vgg, pdb, time
 # vgg.pyをimportする
 # デバッグ用のライブラリpdbをimportする
-# 時間の概念を扱うためんおライブラリtimeをimportする
+# 時間の概念を扱うためのライブラリtimeをimportする
 import tensorflow as tf, numpy as np, os
 # tensorflowをimportする
 # 行列演算用のライブラリnumpyをimportする
@@ -28,7 +28,7 @@ DEVICES = 'CUDA_VISIBLE_DEVICES'
 # style_targetはスタイル画像
 # content_weightはコンテンツ画像の損失の重み
 # style_weightはスタイル画像の損失の重み
-# tv_weightは
+# tv_weightはt
 # vgg_pathはvggへのパス
 # print_iterationsはチェックポイントに到達するまでの数
 # batch_sizeはバッチサイズ
@@ -178,27 +178,46 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         # スタイル損失の合計損失を求めることができる
 
         # total variation denoising
+        # deconvの時に発生するノイズの除去用（？）
         tv_y_size = _tensor_size(preds[:,1:,:,:])
-        #total variationのy方向の大きさを_tensor_size()関数で取得する
+        # total variationのy方向のサイズを_tensor_size()関数で取得する
         tv_x_size = _tensor_size(preds[:,:,1:,:])
-        #total variationのx方向の大きさを_tensor_size()関数で取得する
+        # total variationのx方向のサイズを_tensor_size()関数で取得する
         y_tv = tf.nn.l2_loss(preds[:,1:,:,:] - preds[:,:batch_shape[1]-1,:,:])
+        # total variationのy方向の損失の値を計算する
+        # 一つ一つのノードの二乗和誤差を、行列を用いて一気に算出し、y_tv変数に格納
+        # マイナスされる方の変数が実測値でマイナスする方の値が予測値になる
         x_tv = tf.nn.l2_loss(preds[:,:,1:,:] - preds[:,:,:batch_shape[2]-1,:])
+        # total vatiationのx方向の損失の値を計算する
+        # yの時と同じように、二乗和誤差を求める
         tv_loss = tv_weight*2*(x_tv/tv_x_size + y_tv/tv_y_size)/batch_size
-
+        # tvの重みと、平均二乗和誤差の値を掛け算し、それを損失の値とする
         loss = content_loss + style_loss + tv_loss
+        # ３つの値の合計をstyleganの損失の値とする
 
         # overall loss
         train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+        # Adamを使って学習率を最適化する
+        # minimize()メソッドの引数に割り当てられているlossの値が最小になるような
+        # 学習率の値を探させる
         sess.run(tf.global_variables_initializer())
+        # グラフ内に定義されているtensorflowのvariablesを初期化する処理を行う
         import random
+        # 乱数用のライブラリrandomをimportする
         uid = random.randint(1, 100)
+        # uid変数に1から100の中からランダムな値を格納する
         print("UID: %s" % uid)
+        # uidの値をコンソールに表示する
         for epoch in range(epochs):
+            # ハイパーパラメータのepochsの分だけループする
             num_examples = len(content_targets)
+            # 
             iterations = 0
+            # 1epochの中での繰り返しの数を初期化する
             while iterations * batch_size < num_examples:
+                #
                 start_time = time.time()
+                #
                 curr = iterations * batch_size
                 step = curr + batch_size
                 X_batch = np.zeros(batch_shape, dtype=np.float32)
