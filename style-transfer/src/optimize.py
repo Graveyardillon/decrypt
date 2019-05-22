@@ -280,7 +280,7 @@ def optimize(content_targets, style_target, content_weight, style_weight,
                 if should_print:
                     # should_print変数がtrueであるとき
                     to_get = [style_loss, content_loss, tv_loss, loss, preds]
-                    # [スタイル損失, コンテンツ損失, tv損失, 全体の損失, 入力ノードの値]を
+                    # [スタイル損失, コンテンツ損失, tv損失, 全体の損失, マッピング後の入力ノードの値]を
                     # テンソルとして定義する
                     test_feed_dict = {
                        X_content:X_batch
@@ -306,15 +306,15 @@ def optimize(content_targets, style_target, content_weight, style_weight,
                        res = saver.save(sess, save_path)
                        # セッションをsave_pathの場所に保存する
                     yield(_preds, losses, iterations, epoch)
-                    # 入力ノードの値、損失の値、繰り返しの値、現在のエポックのタプルを
+                    # マッピング後の入力ノードの値、損失の値、現在の繰り返し数、現在のエポックのタプルを
                     # yieldを使って関数から一度返す
 
-#テンソルを格納するための引数tensor
+# テンソルを格納するための引数tensor
 def _tensor_size(tensor):
-    #テンソルのサイズ（形？）を取得するための関数_tensor_size()
+    # テンソルのサイズ（形？）を取得するための関数_tensor_size()
     from operator import mul
-    #operatorライブラリ（演算子）から、掛け算をするための関数mul()を読み込む
+    # operatorライブラリ（演算子）から、掛け算をするための関数mul()を読み込む
     return functools.reduce(mul, (d.value for d in tensor.get_shape()[1:]), 1)
-    #受け取ったテンソルの形を取得して、0番目の要素をスライスして考慮しないようにする
-    #reduce関数を使って、後置for文によって取得されるdの値と1をmulメソッドでノードの数だけ掛け算し、
-    #最終的なタプルの値をreturnする
+    # 受け取ったテンソルの形を取得して、0番目の要素をスライスして考慮しないようにする
+    # reduce関数を使って、後置for文によって取得されるdの値と1をmulメソッドでノードの数だけ掛け算し、
+    # 最終的なタプルの値をreturnする

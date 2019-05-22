@@ -22,7 +22,7 @@ CONTENT_WEIGHT = 7.5e0
 STYLE_WEIGHT = 1e2
 #2種類ある損失のうちの、スタイルの損失の方を算出するために使われる重み
 TV_WEIGHT = 2e2
-#
+#total variationの損失の重み
 
 LEARNING_RATE = 1e-3
 #学習率
@@ -116,7 +116,7 @@ def build_parser():
                         dest='tv_weight',
                         help='total variation regularization weight (default %(default)s)',
                         metavar='TV_WEIGHT', default=TV_WEIGHT)
-    #
+    #total variationの損失を算出するために用いられる重み
 
     parser.add_argument('--learning-rate', type=float,
                         dest='learning_rate',
@@ -157,7 +157,7 @@ def check_opts(opts):
     assert opts.style_weight >= 0
     #スタイルの損失用の重みの値が0より小さければAssertionError
     assert opts.tv_weight >= 0
-    #
+    #total variationの損失の重みが0より小さければAssertionError
     assert opts.learning_rate >= 0
     #学習率が0より小さければAssertionError
 
@@ -219,35 +219,51 @@ def main():
             #学習率を1x10^1に上書きする
 
     args = [
-        #argsリストに値を代入していく
+        # argsリストに値を代入していく
         content_targets,
-        #コンテンツ画像
+        # コンテンツ画像
         style_target,
-        #スタイル画像
+        # スタイル画像
         options.content_weight,
-        #コンテンツの損失の重み
+        # コンテンツの損失の重み
         options.style_weight,
-        #スタイルの損失の重み
+        # スタイルの損失の重み
         options.tv_weight,
-        #
+        # total variationの損失の重み
         options.vgg_path
-        #vggのある場所へのパス
+        # vggのある場所へのパス
     ]
 
+    # argsは初期値などを格納してある変数
+    # kwargsはハイパーパラメータなどが格納してある変数
     for preds, losses, i, epoch in optimize(*args, **kwargs):
-        #
+        # optimize関数から、マッピング後の入力ノードの値、損失の値、
+        # 現在の繰り返し数、現在のエポックを受け取り、
+        # その4つの値をそれぞれの変数に格納する
         style_loss, content_loss, tv_loss, loss = losses
+        # スタイル損失、コンテンツ損失、tv損失、合計の損失をlosses変数から取得し、
+        # その4つの値をそれぞれの変数に格納する
 
         print('Epoch %d, Iteration: %d, Loss: %s' % (epoch, i, loss))
+        # 現在のエポック数、繰り返し数、損失の値をコンソールに表示する
         to_print = (style_loss, content_loss, tv_loss)
+        # スタイル損失、コンテンツ損失、tv損失のタプルをto_print変数に格納する
         print('style: %s, content:%s, tv: %s' % to_print)
+        # それぞれの損失の値をコンソールに表示する
         if options.test:
+            # testモードの場合true
             assert options.test_dir != False
+            # テスト用ディレクトリのパスが指定されていなければAssertionError
             preds_path = '%s/%s_%s.png' % (options.test_dir,epoch,i)
+            # 新しく生成する画像の名前を、テスト用ディレクトリの名前、
+            # 現在のエポック数、繰り返し数から重複がないように生成する
             if not options.slow:
+                # slowモードが指定されていない場合True
                 ckpt_dir = os.path.dirname(options.checkpoint_dir)
+                # チェックポイントのディレクトリを内包しているディレクトリの名前を取得する
                 evaluate.ffwd_to_img(options.test,preds_path,
                                      options.checkpoint_dir)
+                #
             else:
                 save_img(preds_path, img)
     ckpt_dir = options.checkpoint_dir
