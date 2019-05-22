@@ -228,7 +228,7 @@ def optimize(content_targets, style_target, content_weight, style_weight,
                 # currにバッチサイズの値を足した答えをstepとする
                 X_batch = np.zeros(batch_shape, dtype=np.float32)
                 # (bs, h, w, d)の４次元のテンソルbatch_shapeの形をした
-                # ゼロ行列を作り出す
+                # ゼロ行列を作り出し、名前をX_batchとする
                 for j, img_p in enumerate(content_targets[curr:step]):
                     # 変数jには画像セットの中の何番目の画像を参照しているのかが格納される
                     # img_pには画像のパスが格納される
@@ -247,13 +247,14 @@ def optimize(content_targets, style_target, content_weight, style_weight,
 
                 feed_dict = {
                    X_content:X_batch
-                   # tensorflowの変数X_contentにX_batchの値を設定しておく
+                   #このプログラム内で定義されているX_contentの値を
+                   #X_batchとして実行するためのfeed_dict
+                   #これでセッション実行の際にpreds等の値が変更される（たぶん）
                 }
-                # それをフィード値としてfeed_dict変数に格納する
 
                 train_step.run(feed_dict=feed_dict)
-                # AdamOptimizerに、値をX_batchとして渡し、
-                # 最適化を実行する
+                # X_contentの値をX_batchとしてAdamOptimizerを実行する
+                # X_contentは入力ノードで、画像が格納される
                 end_time = time.time()
                 # 時間の計測を再度行う
                 delta_time = end_time - start_time
@@ -279,20 +280,34 @@ def optimize(content_targets, style_target, content_weight, style_weight,
                 if should_print:
                     # should_print変数がtrueであるとき
                     to_get = [style_loss, content_loss, tv_loss, loss, preds]
-                    # [スタイル損失, コンテンツ損失, tv損失, 全体の損失, 入力ノードの値]
+                    # [スタイル損失, コンテンツ損失, tv損失, 全体の損失, 入力ノードの値]を
+                    # テンソルとして定義する
                     test_feed_dict = {
                        X_content:X_batch
+                       # このプログラム内で定義されているX_contentを
+                       # X_batchとして初期化して実行するためのtest_feed_dict
                     }
 
                     tup = sess.run(to_get, feed_dict = test_feed_dict)
+                    # X_contentの値をX_batchとしてセッションを実行し、
+                    # その結果得られたto_getの値をtup変数に格納する
                     _style_loss,_content_loss,_tv_loss,_loss,_preds = tup
+                    # 一行前で取得したto_getの値をそれぞれ変数に格納していく
                     losses = (_style_loss, _content_loss, _tv_loss, _loss)
+                    # この最適化関数の中で出てきた４つの損失の値をタプルとしてlosses変数に格納する
                     if slow:
-                       _preds = vgg.unprocess(_preds)
+                        # slowモードだった場合True
+                        _preds = vgg.unprocess(_preds)
+                        # よくわからんけどunprocessする
                     else:
+                        # slowモードではない場合
                        saver = tf.train.Saver()
+                       # 画像を保存するためのSaverインスタンスを生成する
                        res = saver.save(sess, save_path)
+                       # セッションをsave_pathの場所に保存する
                     yield(_preds, losses, iterations, epoch)
+                    # 入力ノードの値、損失の値、繰り返しの値、現在のエポックのタプルを
+                    # yieldを使って関数から一度返す
 
 #テンソルを格納するための引数tensor
 def _tensor_size(tensor):

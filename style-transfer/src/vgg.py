@@ -110,6 +110,6 @@ def preprocess(image):
 
 # image変数は画像を格納するための変数
 def unprocess(image):
-    # 訓練データの前処理を打ち消すための変数unprocess()
+    # 訓練データの前処理を打ち消すための関数unprocess()
     return image + MEAN_PIXEL
     # 画像にRGBの平均値をプラスする
