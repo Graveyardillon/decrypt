@@ -1,4 +1,3 @@
-@@ -1,224 +0,0 @@
 from __future__ import print_function
 # python3系の機能からprint関数を持ってくる
 import functools
@@ -24,7 +23,7 @@ DEVICES = 'CUDA_VISIBLE_DEVICES'
 # GPUの設定を読み込むための変数
 
 # np arr, np arr
-# content_targetsはコンテンツ画像
+# content_targetsはコンテンツ画像セット
 # style_targetはスタイル画像
 # content_weightはコンテンツ画像の損失の重み
 # style_weightはスタイル画像の損失の重み
@@ -114,7 +113,7 @@ def optimize(content_targets, style_target, content_weight, style_weight,
             # slowモードのとき
             preds = tf.Variable(
                 tf.random_normal(X_content.get_shape()) * 0.256
-                # 入力ノードの形で正規分布で初期化をし、値に0.256をかける
+                # 入力ノードの形を正規分布で初期化をし、値に0.256をかける
             )
             # そしてその値（行列）をpredsに格納する
             preds_pre = preds
@@ -191,15 +190,16 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         # total vatiationのx方向の損失の値を計算する
         # yの時と同じように、二乗和誤差を求める
         tv_loss = tv_weight*2*(x_tv/tv_x_size + y_tv/tv_y_size)/batch_size
-        # tvの重みと、平均二乗和誤差の値を掛け算し、それを損失の値とする
+        # tvの重みと、平均二乗和誤差の値を掛け算し、それをtvの損失の値とする
         loss = content_loss + style_loss + tv_loss
-        # ３つの値の合計をstyleganの損失の値とする
+        # ３つの値の合計をstyleganの損失の値としてloss変数に格納する
 
         # overall loss
         train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss)
         # Adamを使って学習率を最適化する
         # minimize()メソッドの引数に割り当てられているlossの値が最小になるような
         # 学習率の値を探させる
+        # そしてその値をtrain_step変数に格納する
         sess.run(tf.global_variables_initializer())
         # グラフ内に定義されているtensorflowのvariablesを初期化する処理を行う
         import random
@@ -211,38 +211,75 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         for epoch in range(epochs):
             # ハイパーパラメータのepochsの分だけループする
             num_examples = len(content_targets)
-            # 
+            # content_targetsには画像セットが格納されているので、
+            # その数をnum_examplesに格納する
             iterations = 0
             # 1epochの中での繰り返しの数を初期化する
             while iterations * batch_size < num_examples:
-                #
+                # ちゃんと1epochで全ての訓練用画像をチェックできるように、
+                # iterationsとbatch_sizeの積が画像セットの中の
+                # 画像の数に到達するまでループを行う
                 start_time = time.time()
-                #
+                # 時間の計測を行う
                 curr = iterations * batch_size
+                # 繰り返しの数iterationsとバッチサイズを掛け算する
+                # そして得られた値が現在の正しいループの回数をcurrとする
                 step = curr + batch_size
+                # currにバッチサイズの値を足した答えをstepとする
                 X_batch = np.zeros(batch_shape, dtype=np.float32)
+                # (bs, h, w, d)の４次元のテンソルbatch_shapeの形をした
+                # ゼロ行列を作り出す
                 for j, img_p in enumerate(content_targets[curr:step]):
-                   X_batch[j] = get_img(img_p, (256,256,3)).astype(np.float32)
+                    # 変数jには画像セットの中の何番目の画像を参照しているのかが格納される
+                    # img_pには画像のパスが格納される
+                    # content_targetsのリストの要素の値がcurrからstepのスライスなので、
+                    # 1バッチ分の演算がこのループで順番に行われることを意味している
+                    X_batch[j] = get_img(img_p, (256,256,3)).astype(np.float32)
+                    # get_img()関数でimg_pのテンソル値を読み込み、
+                    # サイズを(256, 256, 3)に指定（リサイズ）し、型をfloat32とする
+                    # そしてその値をX_batchのj番目の要素の所に格納する
 
                 iterations += 1
+                # 繰り返し数をプラス１する
                 assert X_batch.shape[0] == batch_size
+                # X_batchの０つめの要素はバッチサイズなはずなので、
+                # その値と、プログラム上のbatch_sizeの値が同じでなければAssertionError
 
                 feed_dict = {
                    X_content:X_batch
+                   # tensorflowの変数X_contentにX_batchの値を設定しておく
                 }
+                # それをフィード値としてfeed_dict変数に格納する
 
                 train_step.run(feed_dict=feed_dict)
+                # AdamOptimizerに、値をX_batchとして渡し、
+                # 最適化を実行する
                 end_time = time.time()
+                # 時間の計測を再度行う
                 delta_time = end_time - start_time
+                # 処理にかかった時間を算出し、delta_timeに格納する
                 if debug:
+                    # debugモードが指定されていればtrue
                     print("UID: %s, batch time: %s" % (uid, delta_time))
+                    # 乱数uidの値と 、処理にかかった時間をコンソールに出力する
                 is_print_iter = int(iterations) % print_iterations == 0
+                # 現在の繰り返し数と、チェックポイントに到達するまでの繰り返しの数の
+                # 剰余が0になる時にis_print_iterにtrueを格納する（それ以外はfalse)
                 if slow:
+                    # slowモードが指定されているときはtrue
                     is_print_iter = epoch % print_iterations == 0
+                    # エポック数とチェックポイントに到達するまでの数の剰余が0になるときtrue
                 is_last = epoch == epochs - 1 and iterations * batch_size >= num_examples
+                # epochs変数は実行したいエポックの数が格納されており、epoch変数には現在のエポック数が格納されている
+                # 繰り返し数とバッチサイズの積が画像セットの画像の数以上になっていたり、
+                # 現在のエポックが最後のエポック（epochsとepochの間には要素のズレが１つだけ生じている）だったり
+                # するときはis_last変数にtrueを格納する
                 should_print = is_print_iter or is_last
+                # is_print_iterもしくはis_lastがtrueだったshould_print変数もtrue
                 if should_print:
+                    # should_print変数がtrueであるとき
                     to_get = [style_loss, content_loss, tv_loss, loss, preds]
+                    # [スタイル損失, コンテンツ損失, tv損失, 全体の損失, 入力ノードの値]
                     test_feed_dict = {
                        X_content:X_batch
                     }
