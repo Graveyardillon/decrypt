@@ -91,70 +91,70 @@ def _conv_tranpose_layer(net, num_filters, filter_size, strides):
     return tf.nn.relu(net)
     #正規化した後の行列を活性化関数Reluを使って活性化し、returnする
 
-#netは画像やネットワーク層
-#filter_sizeはフィルタの大きさを指定する
+# netは画像やネットワーク層
+# filter_sizeはフィルタの大きさを指定する
 def _residual_block(net, filter_size=3):
-    #ResNetを再現した関数_residual_block()
+    # ResNetを再現した関数_residual_block()
     tmp = _conv_layer(net, 128, filter_size, 1)
-    #CNNを通す
+    # CNNを通す
     return net + _conv_layer(tmp, 128, filter_size, 1, relu=False)
-    #CNNを通した後の行列と最初の行列を足し算してreturnする
+    # CNNを通した後の行列と最初の行列を足し算してreturnする
 
-#netはニューラルネットワークのレイヤーもしくは画像
-#trainはよくわからんけどtrueの引数
+# netはニューラルネットワークのレイヤーもしくは画像
+# trainはよくわからんけどtrueの引数
 def _instance_norm(net, train=True):
-    #行列を正規化するための関数
+    # 行列を正規化するための関数
     batch, rows, cols, channels = [i.value for i in net.get_shape()]
-    #ネットワークの形をそれぞれ抽出し、またそれぞれの変数に格納していく
-    #batch_size変数にバッチサイズを代入する
-    #rowsには画像の横の大きさが格納される
-    #colsには画像の縦の大きさが格納される
-    #channelsには、現在のノードの数が格納される
+    # ネットワークの形をそれぞれ抽出し、またそれぞれの変数に格納していく
+    # batch_size変数にバッチサイズを代入する
+    # rowsには画像の横の大きさが格納される
+    # colsには画像の縦の大きさが格納される
+    # channelsには、現在のノードの数が格納される
     var_shape = [channels]
-    #channelsのリストをvar_shapeに格納する
+    # channelsのリストをvar_shapeに格納する
     mu, sigma_sq = tf.nn.moments(net, [1,2], keep_dims=True)
-    #tf.nn.moments関数を使って、netの平均と、[1,2]からの差を分散として求める
-    #keep_dimsをtrueにして、入力時の形を保つようにする
+    # tf.nn.moments関数を使って、netの平均と、[1,2]からの差を分散として求める
+    # keep_dimsをtrueにして、入力時の形を保つようにする
     shift = tf.Variable(tf.zeros(var_shape))
-    #現在のノードの数（形）のゼロ行列を作り出し、shift変数に代入する
+    # 現在のノードの数（形）のゼロ行列を作り出し、shift変数に代入する
     scale = tf.Variable(tf.ones(var_shape))
-    #現在のノードの数（形）の行列を１で初期化し、scale変数に代入する
+    # 現在のノードの数（形）の行列を１で初期化し、scale変数に代入する
     epsilon = 1e-3
-    #1x10^-3をepsilon変数に代入する
+    # 1x10^-3をepsilon変数に代入する
     normalized = (net-mu)/(sigma_sq + epsilon)**(.5)
-    #値を正規化する (X_old - X_new) / X_std
+    # 値を正規化する (X_old - X_new) / X_std
     return scale * normalized + shift
-    #scaleに入っている行列を使って初期化することで、元の形に合わせる。
+    # scaleに入っている行列を使って初期化することで、元の形に合わせる。
 
-#netはニューラルネットワークのレイヤーもしくは画像
-#out_channelsは出力する側のノードの数
-#filter_sizeはCNNのフィルタのサイズを指定する引数
-#transposeは、転置行列かどうかを指定するためのBool型の引数
+# netはニューラルネットワークのレイヤーもしくは画像
+# out_channelsは出力する側のノードの数
+# filter_sizeはCNNのフィルタのサイズを指定する引数
+# transposeは、転置行列かどうかを指定するためのBool型の引数
 def _conv_init_vars(net, out_channels, filter_size, transpose=False):
-    #畳み込み層の重みを初期化するための関数_conv_init_vars()
+    # 畳み込み層の重みを初期化するための関数_conv_init_vars()
     _, rows, cols, in_channels = [i.value for i in net.get_shape()]
-    #ネットワークの形をそれぞれ抽出し、またそれぞれの変数に格納していく
-    #_（ワイルドカード）にはバッチサイズが代入されるが、ワイルドカードなので破棄される
-    #rowsには画像の横の大きさが格納される
-    #colsには画像の縦の大きさが格納される
-    #in_channelsには画像の深さが格納される
+    # ネットワークの形をそれぞれ抽出し、またそれぞれの変数に格納していく
+    # _（ワイルドカード）にはバッチサイズが代入されるが、ワイルドカードなので破棄される
+    # rowsには画像の横の大きさが格納される
+    # colsには画像の縦の大きさが格納される
+    # in_channelsには画像の深さが格納される
     if not transpose:
-        #transpose引数で転置行列を指定されていない場合にこちら側に分岐する
+        # transpose引数で転置行列を指定されていない場合にこちら側に分岐する
         weights_shape = [filter_size, filter_size, in_channels, out_channels]
-        #正方形で縦横の大きさがfilter_sizeのフィルタを定義する
-        #重みの形をweight_shape変数に格納する
-        #深さはそのままノードの数となりうるので、in_channelsとout_channelsがそれぞれ
-        #入力される側のノードの数、出力する側のノードの数となることができる
+        # 正方形で縦横の大きさがfilter_sizeのフィルタを定義する
+        # 重みの形をweight_shape変数に格納する
+        # 深さはそのままノードの数となりうるので、in_channelsとout_channelsがそれぞれ
+        # 入力される側のノードの数、出力する側のノードの数となることができる
     else:
-        #転置行列が指定されていた場合
+        # 転置行列が指定されていた場合
         weights_shape = [filter_size, filter_size, out_channels, in_channels]
-        #転置行列は行列の縦と横が入れ替わっているので、in_channelsとout_channelsを入れ替えると
-        #逆伝播法のときに i*j x j*k = i*k を i*k x k*j = i*jにすることができる
+        # 転置行列は行列の縦と横が入れ替わっているので、in_channelsとout_channelsを入れ替えると
+        # 逆伝播法のときに i*j x j*k = i*k を i*k x k*j = i*jにすることができる
 
     weights_init = tf.Variable(tf.truncated_normal(weights_shape, \
         stddev=WEIGHTS_INIT_STDEV, seed=1), dtype=tf.float32)
-    #2σの位置で切断された正規分布（95%の事象が含まれる）で、tf.Variableを用いて重みを初期化する
-    #戻り値のテンソルの次元を指定し、生成する切断正規分布の標準偏差をWEIGHTS_INIT_STDEVで指定
-    #そそいて戻り値のテンソルの型をfloat32に指定する
+    # 2σの位置で切断された正規分布（95%の事象が含まれる）で、tf.Variableを用いて重みを初期化する
+    # 戻り値のテンソルの次元を指定し、生成する切断正規分布の標準偏差をWEIGHTS_INIT_STDEVで指定
+    # そそいて戻り値のテンソルの型をfloat32に指定する
     return weights_init
-    #初期化されたテンソルのweights_initをreturnする
+    # 初期化されたテンソルのweights_initをreturnする

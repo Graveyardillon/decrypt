@@ -40,7 +40,7 @@ def optimize(content_targets, style_target, content_weight, style_weight,
              batch_size=4, save_path='saver/fns.ckpt', slow=False,
              learning_rate=1e-3, debug=False):
     # パラメータの最適化をするための関数optimizer()
-    #AdaINで最適化をしている
+    # AdaINで最適化をしている
     if slow:
         # slowが指定されていればTrue
         batch_size = 1

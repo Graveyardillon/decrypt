@@ -17,7 +17,7 @@ MEAN_PIXEL = np.array([ 123.68 ,  116.779,  103.939])
 def net(data_path, input_image):
     # net関数は実際に畳み込みなどの処理を行うための関数
     layers = (
-        # 画風変換で用いるネットワークの層を格納しておく
+        # 画風変換で用いるネットワークの層の名前を格納しておく
         'conv1_1', 'relu1_1', 'conv1_2', 'relu1_2', 'pool1',
 
         'conv2_1', 'relu2_1', 'conv2_2', 'relu2_2', 'pool2',
