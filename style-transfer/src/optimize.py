@@ -27,7 +27,7 @@ DEVICES = 'CUDA_VISIBLE_DEVICES'
 # style_targetはスタイル画像
 # content_weightはコンテンツ画像の損失の重み
 # style_weightはスタイル画像の損失の重み
-# tv_weightはt
+# tv_weightはtv損失を算出するための重み
 # vgg_pathはvggへのパス
 # print_iterationsはチェックポイントに到達するまでの数
 # batch_sizeはバッチサイズ

@@ -97,14 +97,14 @@ def ffwd(data_in, paths_out, checkpoint_dir, device_t='/gpu:0', batch_size=4):
     is_paths = type(data_in[0]) == str
     # data_inの0番目の要素が文字列型かどうかを判別する
     if is_paths:
-        # is_pathsがTrueの時は引数としてディレクトリかファイルがほとんど正しく認識されていることになる
+        # is_pathsがTrueの時は引数としてディレクトリが正しく認識されていることになる
         assert len(data_in) == len(paths_out)
-        # data_inの要素数とpaths_outの要素数が一致するかを確かめる
+        # 入力される画像data_inの要素数と出力される画像paths_outの要素数が一致するかを確かめる
         img_shape = get_img(data_in[0]).shape
-        #
+        # 先頭の入力画像の形をimg_shape変数に格納する
 
     else:
-        #
+        # is_pathsの中身がディレクトリでないとき
         assert data_in.size[0] == len(paths_out)
         #
         img_shape = X[0].shape
@@ -163,20 +163,35 @@ def ffwd(data_in, paths_out, checkpoint_dir, device_t='/gpu:0', batch_size=4):
             pos = i * batch_size
             # バッチサイズと現在の繰り返し数の積をpos変数に格納する
             curr_batch_out = paths_out[pos:pos+batch_size]
-            #
+            # 現在のループの数の要素の分だけpaths_outから値を取り出して
+            # curr_batch_out変数に格納する
             if is_paths:
+                # data_inがディレクトリを指定していた場合
                 curr_batch_in = data_in[pos:pos+batch_size]
+                # data_inのディレクトリの中から、現在のループ分だけデータを取り出し、
+                # curr_batch_in変数に格納する
                 X = np.zeros(batch_shape, dtype=np.float32)
+                # batch_shapeの形をしているゼロ行列を作り出し、Xに格納する
                 for j, path_in in enumerate(curr_batch_in):
+                    # jにはループの番号、path_inにはファイル名が格納される
                     img = get_img(path_in)
+                    # path_inで指定されている画像の行列をimg変数に格納する
                     assert img.shape == img_shape, \
                         'Images have different dimensions. ' +  \
                         'Resize images or use --allow-different-dimenszions.'
+                    # 事前に取得してあったimg_shape変数の中身と、img変数のshapeが
+                    # 一致しなければAssertionError
                     X[j] = img
+                    # Xのj番目の要素に画像の行列を格納する
             else:
+                # data_inがディレクトリを指定していなかった場合
                 X = data_in[pos:pos+batch_size]
+                # 現在のループの数だけdata_inからデータを取り出し、
+                # 変数Xに格納する
 
             _preds = sess.run(preds, feed_dict={img_placeholder:X})
+            # すでに定義されているノード変数img_placeholderにXの値をいれて
+            # セッションを実行し、predsの値を_predsに格納する
             for j, path_out in enumerate(curr_batch_out):
                 save_img(path_out, _preds[j])
 
