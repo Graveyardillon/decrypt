@@ -106,7 +106,7 @@ def ffwd(data_in, paths_out, checkpoint_dir, device_t='/gpu:0', batch_size=4):
     else:
         # is_pathsの中身がディレクトリでないとき
         assert data_in.size[0] == len(paths_out)
-        #
+        #data_inに格納されているデータの量と
         img_shape = X[0].shape
         #
 
@@ -163,7 +163,7 @@ def ffwd(data_in, paths_out, checkpoint_dir, device_t='/gpu:0', batch_size=4):
             pos = i * batch_size
             # バッチサイズと現在の繰り返し数の積をpos変数に格納する
             curr_batch_out = paths_out[pos:pos+batch_size]
-            # 現在のループの数の要素の分だけpaths_outから値を取り出して
+            # 現在のループの数で処理したい要素の分だけpaths_outから値を取り出して
             # curr_batch_out変数に格納する
             if is_paths:
                 # data_inがディレクトリを指定していた場合
@@ -193,13 +193,21 @@ def ffwd(data_in, paths_out, checkpoint_dir, device_t='/gpu:0', batch_size=4):
             # すでに定義されているノード変数img_placeholderにXの値をいれて
             # セッションを実行し、predsの値を_predsに格納する
             for j, path_out in enumerate(curr_batch_out):
+                # jには現在の繰り返し数、path_outには現在のループで処理したい要素の分の画像の出力先のパスを格納する
                 save_img(path_out, _preds[j])
+                #paths_outに書かれているパスの位置に_preds[j]に格納されている画像データを保存する
 
         remaining_in = data_in[num_iters*batch_size:]
+        # 現在のバッチで読み込まれている画像のパスをremaining_in変数に格納する
         remaining_out = paths_out[num_iters*batch_size:]
+        # 現在のバッチでの画像出力先のパスをremaining_out変数に格納する
     if len(remaining_in) > 0:
+        # ちゃんとremaining_inの中身が入っていた場合True
         ffwd(remaining_in, remaining_out, checkpoint_dir,
             device_t=device_t, batch_size=1)
+        # ffwd関数を再帰呼び出し、
+        # data_in引数にremaining_inの値を格納する
+        # data_out引数にremaining_outの値を格納する
 
 # in_pathは入力される画像ファイルかディレクトリのパス
 # out_pathは加工を加えた画像ファイルを出力する先
