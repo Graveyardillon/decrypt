@@ -91,7 +91,7 @@ def ffwd_video(path_in, path_out, checkpoint_dir, device_t='/gpu:0', batch_size=
 # paths_outは変化後の画像を格納しておくためのディレクトリかファイルを指定する
 # checkpoint_dirは、訓練中のチェックポイントを読み込むためのディレクトリを指定する
 def ffwd(data_in, paths_out, checkpoint_dir, device_t='/gpu:0', batch_size=4):
-    #
+    # 実際に画風を変換するための関数ffwd()
     assert len(paths_out) > 0
     # paths_outの中身がなければAssertionErrorをはく
     is_paths = type(data_in[0]) == str
@@ -106,16 +106,17 @@ def ffwd(data_in, paths_out, checkpoint_dir, device_t='/gpu:0', batch_size=4):
     else:
         # is_pathsの中身がディレクトリでないとき
         assert data_in.size[0] == len(paths_out)
-        #data_inに格納されているデータの量と
+        # data_inに格納されているデータの数と、paths_outに出力される予定のデータ数が一致しなければAssertionErrorを吐く
         img_shape = X[0].shape
-        #
+        # （Xについてはプログラムの下の方で記述される）
+        # img_shape変数に、画像の行列の格納された変数Xの0番目のデータを格納する
 
     g = tf.Graph()
     # tensorflowのグラフを作成し、変数gに代入する
     batch_size = min(len(paths_out), batch_size)
     # paths_outの要素数と設定されたバッチサイズのうちで小さい方をbatch_size変数にバッチサイズとして代入する
     curr_num = 0
-    # なんかわからんけどcurr_num変数に0を代入する
+    # curr_num変数を0で初期化する
     soft_config = tf.ConfigProto(allow_soft_placement=True)
     # 設定したGPUが存在しない場合にデバイスを自動設定するための引数allow_soft_placementをTrueにし、
     # tensorflowのConfigProtoで読みこませた設定をsoft_configに格納しておく
@@ -186,8 +187,8 @@ def ffwd(data_in, paths_out, checkpoint_dir, device_t='/gpu:0', batch_size=4):
             else:
                 # data_inがディレクトリを指定していなかった場合
                 X = data_in[pos:pos+batch_size]
-                # 現在のループの数だけdata_inからデータを取り出し、
-                # 変数Xに格納する
+                # 現在のループの数の分だけdata_inからデータを取り出し、
+                # そのデータを変数Xに格納する
 
             _preds = sess.run(preds, feed_dict={img_placeholder:X})
             # すでに定義されているノード変数img_placeholderにXの値をいれて
@@ -213,9 +214,11 @@ def ffwd(data_in, paths_out, checkpoint_dir, device_t='/gpu:0', batch_size=4):
 # out_pathは加工を加えた画像ファイルを出力する先
 # checkpoint_dirはチェックポイントを読み込むためのディレクトリ
 def ffwd_to_img(in_path, out_path, checkpoint_dir, device='/cpu:0'):
-    #
+    # 画像の画風を変換するための関数
     paths_in, paths_out = [in_path], [out_path]
+    #
     ffwd(paths_in, paths_out, checkpoint_dir, batch_size=1, device_t=device)
+    # 画風変換の関数ffwdを実行する
 
 def ffwd_different_dimensions(in_path, out_path, checkpoint_dir,
             device_t=DEVICE, batch_size=4):
@@ -309,7 +312,7 @@ def main():
 
         ffwd_to_img(opts.in_path, out_path, opts.checkpoint_dir,
                     device=opts.device)
-        #
+        # ffwd関数を使ってopts.in_pathの中に指定されている画像を画風変換する
     else:
         # in_path引数がファイルではなくディレクトリだった場合
         files = list_files(opts.in_path)
