@@ -15,7 +15,7 @@ from utils import save_img, get_img, exists, list_files
 from argparse import ArgumentParser
 # コマンドライン引数をとるためのライブラリArgumentParserをimportする
 from collections import defaultdict
-# 存在しないキー値にアクセスされたときに自動的にデフォルト値を設定してくれるcollectionsをimportする
+# 存在しないキー値にアクセスされたときに自動的にデフォルト値を設定してくれるdefaultdictをimportする
 import time
 # 時間関連の情報や関数をまとめたライブラリtimeをimportする
 import json
@@ -216,19 +216,32 @@ def ffwd(data_in, paths_out, checkpoint_dir, device_t='/gpu:0', batch_size=4):
 def ffwd_to_img(in_path, out_path, checkpoint_dir, device='/cpu:0'):
     # 画像の画風を変換するための関数
     paths_in, paths_out = [in_path], [out_path]
-    #
+    # ただの文字列型だったin_pathとout_pathをリストにキャストして
+    # それぞれpaths_inとpaths_outに格納する
     ffwd(paths_in, paths_out, checkpoint_dir, batch_size=1, device_t=device)
     # 画風変換の関数ffwdを実行する
 
+# in_pathは入力される画像ファイルかディレクトリのパス
+# out_pathは加工を加えた画像ファイルを出力する先
+# checkpoint_dirはチェックポイントを読み込むためのディレクトリ
 def ffwd_different_dimensions(in_path, out_path, checkpoint_dir,
             device_t=DEVICE, batch_size=4):
+    # 次元数の違う画像のffwdを行うための関数ffwd_different_dimensions()
     in_path_of_shape = defaultdict(list)
+    # in_path_of_shape変数に、list型のcallableなインスタンスを生成して格納する
     out_path_of_shape = defaultdict(list)
+    # out_path_of_shape変数にも、list型のcallableなインスタンスを生成して格納する
+    # 上の2つの変数がdefaultdictを使って初期化している理由は
     for i in range(len(in_path)):
+        # in_pathに格納されているパスの分だけforループを行う
         in_image = in_path[i]
+        # in_image変数に、in_pathのi番目の要素を格納する
         out_image = out_path[i]
+        # out_image変数には、out_imageのi番目の要素を格納する
         shape = "%dx%dx%d" % get_img(in_image).shape
+        # その画像がどんな形をしているのかを文字列で表現し、shape変数に格納する
         in_path_of_shape[shape].append(in_image)
+        #
         out_path_of_shape[shape].append(out_image)
     for shape in in_path_of_shape:
         print('Processing images of shape %s' % shape)
