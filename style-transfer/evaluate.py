@@ -231,7 +231,8 @@ def ffwd_different_dimensions(in_path, out_path, checkpoint_dir,
     # in_path_of_shape変数に、list型のcallableなインスタンスを生成して格納する
     out_path_of_shape = defaultdict(list)
     # out_path_of_shape変数にも、list型のcallableなインスタンスを生成して格納する
-    # 上の2つの変数がdefaultdictを使って初期化している理由は
+    # 上の2つの変数がdefaultdictを使って初期化している理由は、宣言されていない
+    # 要素にあとから値を追加しても正常に動作するようにするため
     for i in range(len(in_path)):
         # in_pathに格納されているパスの分だけforループを行う
         in_image = in_path[i]
@@ -241,9 +242,11 @@ def ffwd_different_dimensions(in_path, out_path, checkpoint_dir,
         shape = "%dx%dx%d" % get_img(in_image).shape
         # その画像がどんな形をしているのかを文字列で表現し、shape変数に格納する
         in_path_of_shape[shape].append(in_image)
-        #
+        # in_path_of_shape変数のshape要素のところにin_pathのi番目の要素を格納する
         out_path_of_shape[shape].append(out_image)
+        # out_path_of_shape変数のshape要素のところにout_pathのi番目の要素を格納する
     for shape in in_path_of_shape:
+        # 
         print('Processing images of shape %s' % shape)
         ffwd(in_path_of_shape[shape], out_path_of_shape[shape],
             checkpoint_dir, device_t, batch_size)
