@@ -263,12 +263,19 @@ def main():
                 # チェックポイントのディレクトリを内包しているディレクトリの名前を取得する
                 evaluate.ffwd_to_img(options.test,preds_path,
                                      options.checkpoint_dir)
-                #
+                # テストとして画風変換を行う
+                # それぞれ引数testはテスト用画像のディレクトリ、
+                # preds_pathは変換後の画像の出力先、checkpoint_dirはチェックポイントのディレクトリ
             else:
+                # slowモードが指定されている場合
                 save_img(preds_path, img)
+                # 画像出力先のディレクトリpreds_pathにimgを保存する
     ckpt_dir = options.checkpoint_dir
+    # checkpoint_dirが格納しているパスをckpt_dirに格納しておく
     cmd_text = 'python evaluate.py --checkpoint %s ...' % ckpt_dir
+    # コンソールに出力したい文字列を格納した変数cmd_textを定義する
     print("Training complete. For evaluation:\n    `%s`" % cmd_text)
+    # 訓練が終了したことを知らせるための文字列をコンソールに出力する
 
 if __name__ == '__main__':
     #このプログラムが直接実行される時True

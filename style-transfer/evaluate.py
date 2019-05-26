@@ -34,7 +34,7 @@ BATCH_SIZE = 4
 DEVICE = '/gpu:0'
 # 所持している1つ目のGPUを利用するためにDEVICE定数に文字列を格納する
 
-'''
+'''画像の画風変換は一旦考慮しないでおく'''
 def ffwd_video(path_in, path_out, checkpoint_dir, device_t='/gpu:0', batch_size=4):
     video_clip = VideoFileClip(path_in, audio=False)
     video_writer = ffmpeg_writer.FFMPEG_VideoWriter(path_out, video_clip.size, video_clip.fps, codec="libx264",
@@ -84,7 +84,6 @@ def ffwd_video(path_in, path_out, checkpoint_dir, device_t='/gpu:0', batch_size=
 
         video_writer.close()
 
-'''
 # get img_shape
 
 # data_inは変化させたい画像の入ってるディレクトリかファイルを指定する
@@ -246,10 +245,14 @@ def ffwd_different_dimensions(in_path, out_path, checkpoint_dir,
         out_path_of_shape[shape].append(out_image)
         # out_path_of_shape変数のshape要素のところにout_pathのi番目の要素を格納する
     for shape in in_path_of_shape:
-        # 
+        # in_path_of_shape変数に格納された画像の形の分だけforループを行う
         print('Processing images of shape %s' % shape)
+        # shapeの画像を現在処理中という旨の分をコンソールに出力する
         ffwd(in_path_of_shape[shape], out_path_of_shape[shape],
             checkpoint_dir, device_t, batch_size)
+        # 画像の形が違うので一気に画風変換を行うことはできない
+        # 少し上の方でin_path_of_shapeのshape要素に値を格納しておいたので、
+        # その値を利用して画風変換をそれぞれの形で行う
 
 def build_parser():
     # オプション解析用の関数build_parser
@@ -341,12 +344,13 @@ def main():
             # サイズの違う画像を使うことが許可されている場合
             ffwd_different_dimensions(full_in, full_out, opts.checkpoint_dir,
                     device_t=opts.device, batch_size=opts.batch_size)
-            #
+            # サイズの違う画像が来ても対応できる関数ffwd_different_dimenstions()
+            # を使って画風変換を行う
         else:
             # サイズの違う画像を使うことが許可されていない場合
             ffwd(full_in, full_out, opts.checkpoint_dir, device_t=opts.device,
                     batch_size=opts.batch_size)
-            #
+            #普通に画風変換を行う
 
 if __name__ == '__main__':
     # evaluate.pyがメインで実行される場合True
